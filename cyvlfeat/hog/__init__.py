@@ -1,1 +1,0 @@
-from .hog import hog
