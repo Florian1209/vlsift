@@ -135,7 +135,7 @@ def get_version_from_git():
         if p.wait() == 1:
             labels.append("dirty")
 
-    return Version(release, dev, labels)
+    return Version("1.0", dev, "test")
 
 
 # TODO: change this logic when there is a git pretty-format
