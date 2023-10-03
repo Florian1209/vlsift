@@ -1,5 +1,0 @@
-numpy:
-  - 1.16   # [not osx]
-  - 1.19   # [osx]
-vlfeat:
-  - 0.9.20
