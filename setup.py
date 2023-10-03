@@ -124,10 +124,11 @@ else:
     USING_CYTHON = True
 
 version, cmdclass = get_version_and_cmdclass('cyvlfeat')
+cmdclass_build_ext={"build_ext":build_ext}
 setup(
     name='cyvlfeat',
     version=version,
-    cmdclass=cmdclass,
+    cmdclass=cmdclass_build_ext,
     description='Cython wrapper of the VLFeat toolkit',
     url='https://github.com/menpo/cyvlfeat',
     author='Patrick Snape',
