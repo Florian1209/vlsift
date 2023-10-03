@@ -1,5 +1,5 @@
 #include <Python.h>
-#include "vl/generic.h"
+#include "sift/vl/generic.h"
 
 
 void set_python_vl_printf() {

@@ -13,6 +13,7 @@ IS_WIN = 'windows' == SYS_PLATFORM
 NUMPY_INC_PATHS = [os.path.join(r, 'numpy', 'core', 'include')
                    for r in site.getsitepackages() if
                    os.path.isdir(os.path.join(r, 'numpy', 'core', 'include'))]
+
 if len(NUMPY_INC_PATHS) == 0:
     try:
         import numpy as np
@@ -29,7 +30,6 @@ elif len(NUMPY_INC_PATHS) > 1:
     print("Taking first (highest precedence on path): {}".format(
         NUMPY_INC_PATHS[0]))
 NUMPY_INC_PATH = NUMPY_INC_PATHS[0]
-
 
 # ---- C/C++ EXTENSIONS ---- #
 # Stolen (and modified) from the Cython documentation:
@@ -62,23 +62,26 @@ def build_extension_from_pyx(pyx_path, extra_sources_paths=None):
     # that the vlfeat vl folder is on the PATH (for the headers)
     # and that the vl.dll file is visible to the build system
     # as well.
-    include_dirs = [NUMPY_INC_PATH]
-    library_dirs = []
-    if IS_WIN:
-        include_dirs.append(os.environ['LIBRARY_INC'])
-        library_dirs.append(os.environ['LIBRARY_BIN'])
+    include_dirs = [NUMPY_INC_PATH, "cyvlfeat/sift/vl"
+                    ]
 
     if extra_sources_paths is None:
         extra_sources_paths = []
-    extra_sources_paths.insert(0, pyx_path)
+    extra_sources_paths = [pyx_path,"cyvlfeat/sift/vl/generic.c","cyvlfeat/sift/vl/getopt_long.c","cyvlfeat/sift/vl/host.c","cyvlfeat/sift/vl/imopv_sse2.c",
+                               "cyvlfeat/sift/vl/imopv.c","cyvlfeat/sift/vl/mathop.c","cyvlfeat/sift/vl/mathop_avx.c","cyvlfeat/sift/vl/mathop_sse2.c",
+                               "cyvlfeat/sift/vl/mser.c","cyvlfeat/sift/vl/pgm.c","cyvlfeat/sift/vl/random.c",
+                               "cyvlfeat/sift/vl/sift.c","cyvlfeat/sift/vl/stringop.c"]
+    # extra_sources_paths.insert(0, pyx_path)
     ext = Extension(name=pyx_path[:-4].replace('/', '.'),
                     sources=extra_sources_paths,
                     include_dirs=include_dirs,
-                    library_dirs=library_dirs,
-                    libraries=['vl'],
+                    library_dirs=[],
                     language='c')
     if IS_LINUX or IS_OSX:
         ext.extra_compile_args.append('-Wno-unused-function')
+        # ext.extra_compile_args.append('-fopenmp')
+        ext.extra_compile_args.append('-msse2')
+        ext.extra_compile_args.append('-mavx')
     if IS_OSX:
         ext.extra_link_args.append('-headerpad_max_install_names')
     return ext
@@ -108,6 +111,17 @@ def get_version_and_cmdclass(package_name):
     spec.loader.exec_module(module)
     return module.__version__, module.cmdclass
 
+try:
+    from Cython.Distutils.extension import Extension
+except ImportError:
+    from setuptools import Extension
+    from setuptools.command.build_ext import build_ext
+
+    USING_CYTHON = False
+else:
+    from Cython.Distutils import build_ext
+
+    USING_CYTHON = True
 
 version, cmdclass = get_version_and_cmdclass('cyvlfeat')
 setup(
